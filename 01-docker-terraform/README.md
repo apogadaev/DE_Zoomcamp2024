@@ -20,6 +20,54 @@ Add to docker file in order to create workdirectory and copy pipeline script to 
 WORKDIR /app
 COPY pipeline.py pipeline.py
 ```
+Create and run pgsql
+```bash
+docker run -it \
+    -e POSTGRES_USER="root" \
+    -e POSTGRES_PASSWORD="root" \
+    -e POSTGRES_DB="ny_taxi" \
+    -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \
+    -p 5432:5432 \
+    postgres:13
+```
+
+### CLI tools & Dataset
+Install alchemy.
+```bash
+pip install psycopg2-binary 
+pip install SQLAlchemy
+```
+Install client for pgsql globally.
+```bash
+pip install pgcli
+pgcli -h localhost -p 5432 -u root -d ny_taxi
+\dt
+\d yellow_taxi_data
+```
+Download dataset.
+```bash
+wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz
+gzip -d yellow_tripdata_2021-01.csv.gz
+```
+Open (option 1).
+```bash
+less yellow_tripdata_2021-01.csv
+```
+Open (option 2).
+```bash
+head -n 100 yellow_tripdata_2021-01.csv
+```
+Open and copy first 100 to separate file.
+```bash
+head -n 100 yellow_tripdata_2021-01.csv > yellow_head.csv
+```
+Count number of lines.
+```bash
+wc -l yellow_tripdata_2021-01.csv
+```
+https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf
+https://d37ci6vzurychx.cloudfront.net/misc/taxi+_zone_lookup.csv
+
 
 ### Example
 Run a pipeline on specific day

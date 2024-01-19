@@ -7,6 +7,7 @@
 4. Install jupyter.
 ```bash
 pip install jupyter
+jupyter notebook
 ```
 5. Open jupyter server GUI in web-browser.
 6. Create docker network.
