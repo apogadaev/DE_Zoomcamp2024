@@ -1,4 +1,4 @@
-# DE_Zoomcamp2004
+# DE_Zoomcamp2024
 
 #### setup codespaces. jupyter & pgsql in docker tryouts
 1. Setup GitHub repository.
