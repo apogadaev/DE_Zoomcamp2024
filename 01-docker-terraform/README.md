@@ -141,3 +141,117 @@ URL="http://127.0.0.1:8000/yellow_tripdata_2021-01.csv.gz"
 
 ### Running Postgres and pgAdmin with Docker-Compose
 Services defined in one docker-compose.yml file can communicate with each other without the need to create a network manually.
+### SQL Refreshser
+```bash
+URL="https://d37ci6vzurychx.cloudfront.net/misc/taxi+_zone_lookup.csv"
+
+python ingest_zones.py \
+    --user=root \
+    --password=root \
+    --host=pgdatabase \
+    --port=5432 \
+    --db=ny_taxi \
+    --table_name=zones \
+    --url=${URL}
+```
+```sql
+-- explicit inner join
+SELECT
+	tpep_pickup_datetime,
+	tpep_dropoff_datetime,
+	total_amount,
+	CONCAT(zone_pick_up."Borough", ' / ', zone_pick_up."Zone") AS pick_up_location,
+	CONCAT(zone_drop_off."Borough", ' / ', zone_drop_off."Zone") AS drop_off_location
+FROM
+	yellow_taxi_trips
+	zones zone_pick_up,
+	zones zone_drop_off
+WHERE
+	yellow_taxi_trips."PULocationID" = zone_pick_up."LocationID"
+	AND yellow_taxi_trips."DOLocationID" = zone_drop_off."LocationID"
+LIMIT 100;
+
+-- inner join
+SELECT
+	tpep_pickup_datetime,
+	tpep_dropoff_datetime,
+	total_amount,
+	CONCAT(zone_pick_up."Borough", ' / ', zone_pick_up."Zone") AS pick_up_location,
+	CONCAT(zone_drop_off."Borough", ' / ', zone_drop_off."Zone") AS drop_off_location
+FROM
+	yellow_taxi_trips
+	JOIN zones zone_pick_up ON yellow_taxi_trips."PULocationID" = zone_pick_up."LocationID"
+	JOIN zones zone_drop_off ON yellow_taxi_trips."DOLocationID" = zone_drop_off."LocationID"
+LIMIT 100;
+
+-- check null
+SELECT
+	tpep_pickup_datetime,
+	tpep_dropoff_datetime,
+	total_amount,
+	"PULocationID",
+	"DOLocationID"
+FROM yellow_taxi_trips
+WHERE "DOLocationID" IS NULL;
+
+-- nested query
+SELECT
+	tpep_pickup_datetime,
+	tpep_dropoff_datetime,
+	total_amount,
+	"PULocationID",
+	"DOLocationID"
+FROM yellow_taxi_trips
+WHERE "DOLocationID" NOT IN (SELECT "LocationID" FROM ZONES);
+
+-- left join
+SELECT
+	tpep_pickup_datetime,
+	tpep_dropoff_datetime,
+	total_amount,
+	CONCAT(zone_pick_up."Borough", ' / ', zone_pick_up."Zone") AS pick_up_location,
+	CONCAT(zone_drop_off."Borough", ' / ', zone_drop_off."Zone") AS drop_off_location
+FROM
+	yellow_taxi_trips
+	LEFT JOIN zones zone_pick_up ON yellow_taxi_trips."PULocationID" = zone_pick_up."LocationID"
+	LEFT JOIN zones zone_drop_off ON yellow_taxi_trips."DOLocationID" = zone_drop_off."LocationID"
+LIMIT 100;
+
+-- group by day & order by day
+SELECT
+-- 	DATE_TRUNC('DAY', tpep_dropoff_datetime),
+	CAST(tpep_dropoff_datetime AS DATE) AS day,
+	COUNT(1)
+FROM yellow_taxi_trips
+GROUP BY CAST(tpep_dropoff_datetime AS DATE)
+ORDER BY day ASC;
+
+-- group by day & order by count
+SELECT
+	CAST(tpep_dropoff_datetime AS DATE) AS day,
+	COUNT(1) AS count
+FROM yellow_taxi_trips
+GROUP BY CAST(tpep_dropoff_datetime AS DATE)
+ORDER BY count DESC;
+
+-- max
+SELECT
+	CAST(tpep_dropoff_datetime AS DATE) AS day,
+	COUNT(1) AS count,
+	MAX(total_amount),
+	MAX(passenger_count)
+FROM yellow_taxi_trips
+GROUP BY CAST(tpep_dropoff_datetime AS DATE)
+ORDER BY count DESC;
+
+-- group by select index
+SELECT
+	CAST(tpep_dropoff_datetime AS DATE) AS day,
+	"DOLocationID",
+	COUNT(1) AS count,
+	MAX(total_amount),
+	MAX(passenger_count)
+FROM yellow_taxi_trips
+GROUP BY 1, 2
+ORDER BY count DESC;
+```
