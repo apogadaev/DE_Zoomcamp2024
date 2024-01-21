@@ -118,4 +118,23 @@ python ingest_data.py \
     --db=ny_taxi \
     --table_name=yellow_taxi_trips \
     --url=${URL}
+
+docker build -t taxi_ingest:v001 .
+
+docker run -it \
+    --network=pg-network \
+    taxi_ingest:v001 \
+        --user=root \
+        --password=root \
+        --host=pg-database \
+        --port=5432 \
+        --db=ny_taxi \
+        --table_name=yellow_taxi_trips \
+        --url=${URL}
+```
+Start HTTP server in python
+```bash
+python -m http.server
+
+URL="http://127.0.0.1:8000/yellow_tripdata_2021-01.csv.gz"
 ```
