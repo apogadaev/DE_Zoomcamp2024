@@ -138,3 +138,6 @@ python -m http.server
 
 URL="http://127.0.0.1:8000/yellow_tripdata_2021-01.csv.gz"
 ```
+
+### Running Postgres and pgAdmin with Docker-Compose
+Services defined in one docker-compose.yml file can communicate with each other without the need to create a network manually.

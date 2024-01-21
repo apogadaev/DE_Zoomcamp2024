@@ -1,2 +1,4 @@
 /.ipynb_checkpoints
 output.csv
+/tmp
+/ny_taxi_postgres_data
