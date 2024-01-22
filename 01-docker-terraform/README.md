@@ -255,3 +255,72 @@ FROM yellow_taxi_trips
 GROUP BY 1, 2
 ORDER BY count DESC;
 ```
+
+### GCP
+![Alt text](/01-docker-terraform/documentation/images/image.png)
+
+### Terraform Primer
+HashiCorp Terraform is an infrastructure as code tool that lets you define both cloud and on-prem resources in human-readable configuration files that you can version, reuse, and share. You can then use a consistent workflow to provision and manage all of your
+infrastructure throughout its lifecycle.
+Source - https://developer.hashicorp.com/terraform/intro
+
+why?
+- simplicity in keeping track of infrastructure
+- easier collaboration
+- reproducibility
+- ensure resources are removed when not needed
+what is not?
+- does not manage and update code on infrastructure
+- does not give you the ability to change immutable resources
+- not used to manage resources not defined in your terraform files
+
+infrastructure as code - allow you make resources in code.
+![Alt text](/01-docker-terraform/documentation/images/image3.png)
+https://registry.terraform.io/browse/providers
+
+### Terraform CLI
+get provider i need
+```bash
+terraform init
+```
+what i am about to do
+```bash
+terraform plan
+```
+do what is in the tf files
+```bash
+terraform apply
+```
+remove everything defined in tf files
+```bash
+terraform destroy
+```
+### Terraform Basics
+In GCP project go to IAM & Admin -> Service Accounts -> Create Service Account.
+
+Roles: Cloud Storage:Storage Admin, BigQuery:BigQueryAdmin, ComputeEngine:ComputeAdmin.
+
+Manage keys -> Create new key -> JSON -> Create.
+
+```bash
+terraform fmt
+
+export GOOGLE_CREDENTIALS='/...'
+```
+
+Initialize
+```bash
+terraform init
+```
+Plan
+```bash
+terraform plan
+```
+Deploy
+```bash
+terraform apply
+```
+Get rid of everything
+```bash
+terraform destroy
+```
