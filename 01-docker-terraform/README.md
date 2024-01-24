@@ -324,3 +324,90 @@ Get rid of everything
 ```bash
 terraform destroy
 ```
+
+### Setting up the Environment on Google Cloud (Cloud VM + SSH access)
+In GCP project go to Compute Engine -> VM instances -> Create instance.
+Generate ssh key
+```bash
+cd .ssh/
+ssh-keygen -t rsa -f ~/.ssh/KEY_FILENAME -C USERNAME -b 2048
+```
+Connect through ssh
+```bash
+ssh -i ~/.ssh/gcp username@0.0.0.0
+```
+Add ssh config
+```bash
+nano ~/.ssh/config
+```
+```
+Host instance-1
+  HostName 0.0.0.0
+  User uesrname
+  IdentityFile ~/.ssh/gcp
+```
+Configure instance:
+ - download anaconda
+ ```bash
+ wget https://repo.anaconda.com/archive/Anaconda3-2023.09-0-Linux-x86_64.sh
+ bash Anaconda3-2023.09-0-Linux-x86_64.sh
+ less .bashrc
+ source .bashrc
+ ```
+ or
+ log in and log out
+ ```bash
+which python
+python
+```
+```python
+import pandas as pd
+
+pd.__version__
+```
+
+Install docker
+https://github.com/sindresorhus/guides/blob/main/docker-without-sudo.md
+https://github.com/docker/compose/releases/download/v2.24.2/docker-compose-linux-x86_64
+```bash
+sudo apt-get update
+sudo apt-get install docker.io
+
+docker run hello-world
+mkdir bin;cd bin; wget https://github.com/docker/compose/releases/download/v2.24.2/docker-compose-linux-x86_64 -O docker-compose; chmod +x docker-compose;
+cd ~; nano .bashrc
+export PATH="${HOME}/bin:${PATH}"
+pip install pgcli
+pip uninstall pgcli
+conda install -c conda-forge pgcli
+```
+Run docker compose in directory with compose file
+```bash
+docker-compose up -d
+```
+Forward port from local machine to remote in VSCode while being connected to remote machine (pgdb, pgadmin, jupyter)
+Install remote ssh in vscode
+Install terraform
+```bash 
+cd ~/bin;
+wget https://releases.hashicorp.com/terraform/1.7.0/terraform_1.7.0_linux_amd64.zip;
+```
+
+sent keys to remote machin
+```bash
+cd /dir/with/keys
+sftp instance-1
+mkdir .gc
+cd .gc
+put my-creds.json
+```
+
+configure google cloud cli
+```bash
+gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS
+```
+
+shutdown instance
+```bash
+sudo shutdown now
+``
