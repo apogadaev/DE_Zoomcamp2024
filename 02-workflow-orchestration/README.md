@@ -1,6 +1,6 @@
 ## 2.2.1 What is Orchestration?
 
-![Alt text](image.png)
+![Alt text](documentation/image.png)
 
 ### Extract
 Pull data from a source (API— NYC taxi dataset)
@@ -15,7 +15,7 @@ A large part of data engineering is extracting, transforming, and loading data b
 - Steps 🟰 tasks
 - Workflows 🟰 DAGs (directed acyclic graphs) or Pipelines
 
-![Alt text](image-1.png)
+![Alt text](documentation/image-1.png)
 
 ### Orchestrator handles
 - Workflow management
@@ -31,7 +31,7 @@ A large part of data engineering is extracting, transforming, and loading data b
 ## 2.2.2 What is Mage?
 An open-source pipeline tool for orchestrating transforming, and integrating data
 
-![Alt text](image-3.png)
+![Alt text](documentation/image-3.png)
 
 Hybrid environment
  - Use our GUI for interactive development (or don’t, I like VSCode)
@@ -45,7 +45,7 @@ Best code practices.
 - Fully-featured observability. Transformation in one place: dbt models, streaming, & more.
 - DRY principles. No more DAGs with duplicate functions and weird imports DEaaS.
 
-![Alt text](image-4.png)
+![Alt text](documentation/image-4.png)
 ### Projects
 - A project forms the basis for all the work you can do in Mage— you can think of it like a GitHub repo. 
 - It contains the code for all of your pipelines, blocks, and other assets.
@@ -62,5 +62,5 @@ Best code practices.
 - Changing one block will change it everywhere it’s used, but don’t worry, it’s easy to detach blocks to separate instances if necessary.
 - Blocks can be used to perform a variety of actions, from simple data transformations to complex machine learning models.
 
-![Alt text](image-5.png)
+![Alt text](documentation/image-5.png)
 
