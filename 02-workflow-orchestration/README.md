@@ -208,3 +208,149 @@ def export_data_to_postgres(df: DataFrame, **kwargs) -> None:
 ```sql
 SELECT * FROM ny_taxi.yellow_cab_data LIMIT 5;
 ```
+
+## 2.2.4 - Configuring GCP
+Create Project.
+Create Cloude Storage bucket.
+Create Service Account and select roles: OWNER.
+Create Service Account key and download json file.
+In 02-workflow-orchestration/mage-zoomcamp/magic-zoomcamp/io_config.yaml specify keys
+```yaml
+GOOGLE_SERVICE_ACC_KEY_FILEPATH: "/path/to/your/service/account/key.json"
+```
+Create python data loader with google cloud storage and define credentials of bucket
+```python
+from mage_ai.settings.repo import get_repo_path
+from mage_ai.io.config import ConfigFileLoader
+from mage_ai.io.google_cloud_storage import GoogleCloudStorage
+from os import path
+if 'data_loader' not in globals():
+    from mage_ai.data_preparation.decorators import data_loader
+if 'test' not in globals():
+    from mage_ai.data_preparation.decorators import test
+
+
+@data_loader
+def load_from_google_cloud_storage(*args, **kwargs):
+    """
+    Template for loading data from a Google Cloud Storage bucket.
+    Specify your configuration settings in 'io_config.yaml'.
+
+    Docs: https://docs.mage.ai/design/data-loading#googlecloudstorage
+    """
+    config_path = path.join(get_repo_path(), 'io_config.yaml')
+    config_profile = 'default'
+
+    bucket_name = ''
+    object_key = 'titanic_clean.csv'
+
+    return GoogleCloudStorage.with_config(ConfigFileLoader(config_path, config_profile)).load(
+        bucket_name,
+        object_key,
+    )
+
+
+@test
+def test_output(output, *args) -> None:
+    """
+    Template code for testing the output of the block.
+    """
+    assert output is not None, 'The output is undefined'
+
+```
+## 2.2.4 - ETL: API to GCS
+1. Create new pipeline add previous loader and transformer and create new python GCP exporter
+```python
+object_key = 'nyc_taxi_data.parquet'
+```
+You can write big amount of data into single parquet file so we need a partitioning
+```python
+import pyarrow as pa
+import pyarrow.parquet as pq
+import os
+
+
+if 'data_exporter' not in globals():
+    from mage_ai.data_preparation.decorators import data_exporter
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/home/src/..."
+bucket_name = ''
+project_id = ''
+table_name = 'nyc_taxi_data'
+
+root_path = f'{bucket_name}/{table_name}'
+
+@data_exporter
+def export_data(data, *args, **kwargs):
+    data['tpep_pickup_date'] = data['tpep_pickup_datetime'].dt.date
+
+    table = pa.Table.from_pandas(data)
+    gcs = pa.fs.GcsFileSystem()
+    pq.write_to_dataset(
+        table,
+        root_path=root_path,
+        partition_cols=['tpep_pickup_date'],
+        filesystem=gcs
+    )
+```
+
+## 2.2.5 - ETL: GCS to BigQuery
+1. Create new pipeline add previous loader and transformer and create new python GCP exporter
+```python
+from mage_ai.settings.repo import get_repo_path
+from mage_ai.io.config import ConfigFileLoader
+from mage_ai.io.google_cloud_storage import GoogleCloudStorage
+from os import path
+if 'data_loader' not in globals():
+    from mage_ai.data_preparation.decorators import data_loader
+if 'test' not in globals():
+    from mage_ai.data_preparation.decorators import test
+
+
+@data_loader
+def load_from_google_cloud_storage(*args, **kwargs):
+    """
+    Template for loading data from a Google Cloud Storage bucket.
+    Specify your configuration settings in 'io_config.yaml'.
+
+    Docs: https://docs.mage.ai/design/data-loading#googlecloudstorage
+    """
+    config_path = path.join(get_repo_path(), 'io_config.yaml')
+    config_profile = 'default'
+
+    bucket_name = ''
+    object_key = 'titanic_clean.csv'
+
+    return GoogleCloudStorage.with_config(ConfigFileLoader(config_path, config_profile)).load(
+        bucket_name,
+        object_key,
+    )
+
+```
+2. Do column normalization in python transformer
+```python
+if 'transformer' not in globals():
+    from mage_ai.data_preparation.decorators import transformer
+if 'test' not in globals():
+    from mage_ai.data_preparation.decorators import test
+
+
+@transformer
+def transform(data, *args, **kwargs):
+    data.columns = (data.columns
+                    .str.replace(' ', '_')
+                    .str.lower()
+    )
+
+    return data
+```
+3. Create new python BigQuery exporter
+```sql
+SELECT * FROM {{ df_1 }}
+```
+
+Now we can create scheduler:
+1. Go to triggers
+2. Create
+3. Enable
+
