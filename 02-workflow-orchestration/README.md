@@ -354,3 +354,128 @@ Now we can create scheduler:
 2. Create
 3. Enable
 
+## 2.2.6a - Parameterized Execution
+Process of loading data sets depends on some parameters. For example, we can load data for specific date range.
+
+We can access paramaers in kwargs in python blocks.
+```python
+@data_exporter
+def export_data_to_google_cloud_storage(df: DataFrame, **kwargs) -> None:
+    """
+    Template for exporting data to a Google Cloud Storage bucket.
+    Specify your configuration settings in 'io_config.yaml'.
+
+    Docs: https://docs.mage.ai/design/data-loading#googlecloudstorage
+    """
+
+    now = kwargs.get('execution_date')
+    print(now)
+    print(now.strftime("%Y/%m/%d"))
+```
+default
+```json
+{'env': 'dev', 'execution_date': datetime.datetime(2024, 2, 4, 9, 59, 30, 616575), 'interval_end_datetime': None, 'interval_seconds': None, 'interval_start_datetime': datetime.datetime(2024, 2, 4, 9, 59, 30, 616575), 'interval_start_datetime_previous': None, 'event': {}, 'logger': <Logger export_taxi_to_gcp_parameter_test (INFO)>, 'configuration': {}, 'context': {}, 'pipeline_uuid': 'load_to_gcp_cparametrrized', 'block_uuid': 'export_taxi_to_gcp_parameter'}
+```
+### incremental data
+```python
+@data_exporter
+def export_data_to_google_cloud_storage(df: DataFrame, **kwargs) -> None:
+    """
+    Template for exporting data to a Google Cloud Storage bucket.
+    Specify your configuration settings in 'io_config.yaml'.
+
+    Docs: https://docs.mage.ai/design/data-loading#googlecloudstorage
+    """
+
+    now = kwargs.get('execution_date')
+
+    now_fpath = now.strftime("%Y/%m/%d")
+    config_path = path.join(get_repo_path(), 'io_config.yaml')
+    config_profile = 'default'
+
+    bucket_name = ''
+    object_key = f'{now_fpath}/daily-trips.parquet'
+    print(object_key)
+
+    GoogleCloudStorage.with_config(ConfigFileLoader(config_path, config_profile)).export(
+        df,
+        bucket_name,
+        object_key,
+    )
+```
+
+## 2.2.6b - Backfills
+Backfilling - process of running a pipeline for historical date to refill data sets.
+![alt text](image.png)
+
+## 2.2.7 - Deployment
+Prerequisites:
+- Terraform
+- GC SDK CLI
+- GC Permissions
+- Mage terraform template
+###  Google Cloud Permissions
+Service account permissions:
+- Artifact Registry Reader
+- Artifact Registry Writer
+- Cloud Run Developer
+- Cloud SQL Admin
+- Service Account Token Creator
+###
+check gcloud cli
+```bash
+gcloud auth list
+```
+list buckets
+```bash
+gcloud storage ls
+```
+
+fetch templates
+```bash
+git clone https://github.com/mage-ai/mage-ai-terraform-templates
+cd gcp
+```
+
+You have to change the files of Terraform. You need to go to the GCP folder on the repo and change the variables.tf and main files like we have done on week1-2.
+Substitute the variables of the variables.tf for the right ones:
+project (with your GCP project_id)
+postgres user (.env file)
+Add the credentials (your service account)
+variable "credentials" {
+  description = "My Credentials"
+  default     = "path_to_the_credentials_of_your_service_account_that_you_downloaded"
+}
+zone and region (if applied)
+Add the credentials in the main.tf on the properties like we did last week.
+provider "google" {
+  credentials = file(var.credentials)
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+}
+Don't forget to activate the service account:
+gcloud auth activate-service-account --key-file $var_credentials
+If you are in the GCP free trial you will face a problem with the load_balancer, in the FAQ (2.2.7.d GCP Load Balancer Problem (Security Policies quota)) you have already the solution for it.
+
+It appears that the video DE Zoomcamp 2.2.7 is missing  the actual deployment of Mage using Terraform to GCP. The steps for the deployment were not covered in the video.
+I successfully deployed it and wanted to share some key points:
+In variables.tf, set the project_id default value to your GCP project ID.
+ 2 . Enable the Cloud Filestore API:
+           Visit the Google Cloud Console.
+Navigate to "APIs & Services" > "Library."
+Search for "Cloud Filestore API."
+Click on the API and enable it.
+To perform the deployment:
+terraform init
+terraform apply
+Please note that during the terraform apply step, Terraform will prompt you to enter the PostgreSQL password. After that, it will ask for confirmation to proceed with the deployment. Review the changes, type 'yes' when prompted, and press Enter.
+
+2.2.7.d GCP Load Balancer Problem (Security Policies quota)
+If you are on the free trial account on GCP you will face this issue when trying to deploy the infrastructures with terraform. This service is not available for this kind of account.
+The solution I found was to delete the load_balancer.tf file and to comment or delete the rows that differentiate it on the main.tf file. After this just do terraform destroy to delete any infrastructure created on the fail attempts and re-run the terraform apply.
+Code on main.tf to comment/delete:
+Line 166, 167, 168
+
+Line 148
+File Path: Cannot save file into a non-existent directory: 
