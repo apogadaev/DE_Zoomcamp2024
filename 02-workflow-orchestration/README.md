@@ -479,3 +479,23 @@ Line 166, 167, 168
 
 Line 148
 File Path: Cannot save file into a non-existent directory: 
+
+## Airflow
+Data Lake is?
+![alt text](/02-workflow-orchestration/documentation/airflow/image.png)
+![alt text](/02-workflow-orchestration/documentation/airflow/image-1.png)
+### ETL (warehouse) vs ELT (lake)
+- Extract Transform and Load vs Extract Load and Transform
+- ETL is mainly used for a small amount of data whereas ELT is used for large amounts of data
+- ELT provides data lake support (Schema on read)
+
+### 2.2.1 - Introduction to Workflow Orchestration
+![alt text](/02-workflow-orchestration/documentation/airflow/image-2.png)
+DAG - directed acyclic graph where nodes are jobs and edges are dependencies between jobs and there is no cycle in the graph.
+
+2.3.1 - Setup Airflow Environment with Docker-Compose
+![alt text](image-3.png)
+https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/cohorts/2022/week_2_data_ingestion/airflow/1_setup_official.md
+```bash
+curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.8.1/docker-compose.yaml'
+```
