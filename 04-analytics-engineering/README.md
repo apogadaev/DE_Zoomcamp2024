@@ -95,3 +95,15 @@ Standalone dbt projects, with models and macros that tackle a specific problem a
 In the dbt_project.yml file
 - On the command line
 
+##### Testing and Documentation
+- Assumptions that we make about our data 
+- Tests in dbt are essentially a select sql query
+- These assumptions get compiled to sql that returns the amount of failing records
+- Test are defined on a column in the .yml file
+- dbt provides basic tests to check if the column values are:
+    - Unique
+    - Not null 
+    - Accepted values
+    - A foreign key to another table
+    - You can create your custom tests as queries
+
