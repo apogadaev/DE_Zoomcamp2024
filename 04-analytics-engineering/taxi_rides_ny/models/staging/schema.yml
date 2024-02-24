@@ -10,7 +10,7 @@ sources:
       - name: yellow_tripdata
 models:
   - name: stg_green_tripdata
-    description: ""
+    description: "test"
     columns:
       - name: tripid
         data_type: string
